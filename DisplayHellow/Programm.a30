@@ -1,0 +1,161 @@
+;------------------------------------------------------------------------
+;                                                                       |
+;   FILE        :für Uebungsprogramme mit Display                       |
+;   DATE        :Nov 2014                                               |
+;   DESCRIPTION :Template für M16C65 Uebungen an der Juventus           |
+;   CPU GROUP   :M16C65                                                 |
+;   Owner       :Martin Burger / Kevin Landolt                                         |
+;                                                                       |
+;   Version: 1.0                                                        |
+;                                                                       |
+;------------------------------------------------------------------------
+
+
+;*********************************************************************
+;
+;     *** Include Files ***
+;
+;*********************************************************************
+	.include sfr65.inc
+	.include Init_M16C65.inc
+	.include displaydriver.inc
+	.include clockdriver.inc
+
+
+ProgramStart:
+
+;*********************************************************************
+;
+;     *** Initialization ***
+;
+;*********************************************************************	
+	JSR clockInit
+	JSR displayInit
+	
+	JSR displayClearBuffer
+	
+;	Interrupts vorbereiten
+	mov.b #000h, pd8
+	mov.b #07h, int0ic
+	mov.b #07h, int1ic
+	mov.b #07h, int2ic
+
+;	Interrupts Flag einschalten
+	fset I
+
+;*********************************************************************
+;
+;     *** Programm ***
+;
+;*********************************************************************	
+
+;Leerer Loop:
+Loop:	
+	nop
+	nop
+	jmp Loop
+
+
+;*********************************************************************
+;
+;     *** Interrupts ***
+;
+;*********************************************************************	
+Int0_int:
+	
+JSR displayClearBuffer
+	
+		
+	Mov.b #48h,0400h
+	Mov.b #65h,0401h
+	Mov.b #6Ch,0402h
+	Mov.b #6Ch,0403h
+	Mov.b #6Fh,0404h
+	Mov.b #0Ch,0405h
+	
+	
+	Mov.w #0000h,R0
+	JSR displaySetPos
+	Mov.w #0400h,A0
+	JSR displayWriteString
+	
+	
+	Mov.b #46h,0410h
+	Mov.b #6Ch,0411h
+	Mov.b #61h,0412h
+	Mov.b #76h,0413h
+	Mov.b #65h,0414h
+	Mov.b #21h,0415h
+	Mov.b #0Ch,0416h
+	
+	Mov.w #0100h,R0
+	JSR displaySetPos
+	Mov.w #0410h,A0
+	JSR displayWriteString
+	
+	JSR displayForceUpdate
+	
+	
+	reit
+
+
+Int1_int:
+	
+JSR displayClearBuffer
+	
+		
+	Mov.b #48h,0400h
+	Mov.b #65h,0401h
+	Mov.b #6Ch,0402h
+	Mov.b #6Ch,0403h
+	Mov.b #6Fh,0404h
+	Mov.b #0Ch,0405h
+	
+	
+	Mov.w #0000h,R0
+	JSR displaySetPos
+	Mov.w #0400h,A0
+	JSR displayWriteString
+	
+	
+	Mov.b #4Bh,0410h
+	Mov.b #65h,0411h
+	Mov.b #76h,0412h
+	Mov.b #69h,0413h
+	Mov.b #6Eh,0414h
+	Mov.b #21h,0415h
+	Mov.b #0Ch,0416h
+	
+	Mov.w #0100h,R0
+	JSR displaySetPos
+	Mov.w #0410h,A0
+	JSR displayWriteString
+	
+	JSR displayForceUpdate
+
+
+	reit
+
+
+Int2_int:
+	
+	JSR displayClearBuffer
+	
+	JSR displayForceUpdate
+	
+	reit
+
+
+
+; dummy interrupt function
+;---------------------------------------------------------------------
+
+dummy_int:
+		reit
+
+; Interrupt Vektoren
+;---------------------------------------------------------------------
+	.include IRQ_Vect.inc
+		
+
+.End	

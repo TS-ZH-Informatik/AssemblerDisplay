@@ -1,0 +1,19 @@
+[HIMDBVersion]
+2.0
+[DATABASE_VERSION]
+"1.2" 
+[CURRENT_PROJECT]
+"DisplayHellow" 
+[GENERAL_DATA]
+[BREAKPOINTS]
+[OPEN_WORKSPACE_FILES]
+"C:\WorkSpace\DisplayHellow\DisplayHellow\Init_M16C65.inc" 
+"C:\WorkSpace\DisplayHellow\DisplayHellow\IRQ_Vect.inc" 
+"C:\WorkSpace\DisplayHellow\DisplayHellow\Programm.a30" 
+[WORKSPACE_FILE_STATES]
+"C:\WorkSpace\DisplayHellow\DisplayHellow\IRQ_Vect.inc" 50 50 891 326 0 2 
+"C:\WorkSpace\DisplayHellow\DisplayHellow\Init_M16C65.inc" 25 25 891 326 0 1 
+"C:\WorkSpace\DisplayHellow\DisplayHellow\Programm.a30" -8 -30 1057 514 1 0 
+[LOADED_PROJECTS]
+"DisplayHellow" 
+[END]
