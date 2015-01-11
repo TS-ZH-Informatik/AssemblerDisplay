@@ -21,7 +21,20 @@
 	.include displaydriver.inc
 	.include clockdriver.inc
 
-
+;*********************************************************************
+;
+;     *** Defines ***
+;
+;*********************************************************************	
+	
+	ButtonTimeoutReloadValue	.equ	0FFh		;Variable an Ram zuweisen:
+	ButtonTimeout1				.equ	0520h
+	ButtonTimeout2				.equ	0521h
+	ButtonTimeout3				.equ	0522h
+	Button1Ready				.btequ	0,0523h
+	Button2Ready				.btequ	1,0523h
+	Button3Ready				.btequ	2,0523h
+	
 ProgramStart:
 
 ;*********************************************************************
@@ -34,12 +47,26 @@ ProgramStart:
 	
 	JSR displayClearBuffer
 	
+;	Global Interrupt Level Setzen:
+	LDIPL #0	
+	
 ;	Interrupts vorbereiten
-	mov.b #000h, pd8
-	mov.b #07h, int0ic
-	mov.b #07h, int1ic
-	mov.b #07h, int2ic
+	mov.b #000h, pd8		;Set Buttons as Input
+	mov.b #07h, int0ic		;Enable Button1 Interrupt
+	mov.b #07h, int1ic		;Enable Button2 Interrupt
+	mov.b #07h, int2ic		;Enable Button3 Interrupt
 
+
+	
+; Button für Entprellung vorbereiten
+
+	mov.b #00h,ButtonTimeout1	;Init ButonTimeout
+	mov.b #00h,ButtonTimeout2	;Init ButonTimeout
+	mov.b #00h,ButtonTimeout3	;Init ButonTimeout
+	bset Button1Ready			;Init ReadyStatus
+	bset Button2Ready			;Init ReadyStatus
+	bset Button3Ready			;Init ReadyStatus
+	
 ;	Interrupts Flag einschalten
 	fset I
 
@@ -49,10 +76,40 @@ ProgramStart:
 ;
 ;*********************************************************************	
 
-;Leerer Loop:
+;ArbeitsLoop mit Entprellung:
 Loop:	
 	nop
 	nop
+;Button Entprellungsbereich:	
+	cmp.b #0h,ButtonTimeout1			;Check Button Timeout im Interrupt wird die Reload Time erhöht somit läuft danach hier ein 
+	jnz ButtonTimeout1GreaterZero		;Falls die Timeout Zeit grösser als 0 ist wird der Nächste bereich übersprungenn
+ButtonTimeout1Zero:
+	bset Button1Ready					;Button 1 wird nur auf Ready gesetzt falls der Timeout auf 0 ist.
+	jmp ButtonTimeout1End
+ButtonTimeout1GreaterZero:				;Timeout wert grösser 0
+	sub.b #01h,ButtonTimeout1			;Timeout decrement(verkleinern)
+ButtonTimeout1End:
+	cmp.b #0h,ButtonTimeout2
+	jnz ButtonTimeout2GreaterZero
+ButtonTimeout2Zero:
+	bset Button2Ready
+	jmp ButtonTimeout2End
+ButtonTimeout2GreaterZero:
+	sub.b #01h,ButtonTimeout2
+ButtonTimeout2End:
+	cmp.b #0h,ButtonTimeout3
+	jnz ButtonTimeout3GreaterZero
+ButtonTimeout3Zero:
+	bset Button3Ready
+	jmp ButtonTimeout3End
+ButtonTimeout3GreaterZero:
+	sub.b #01h,ButtonTimeout3
+ButtonTimeout3End:
+
+;Entprellungsbereich Ende
+	
+	
+	
 	jmp Loop
 
 
@@ -62,7 +119,12 @@ Loop:
 ;
 ;*********************************************************************	
 Int0_int:
-	
+;Entprellungscheck	
+	btst Button1Ready									;Button Ready?
+	jz	EndIntButton1									;Button not Ready! => go to end
+	bclr Button1Ready									;Button pressed, marked as Not Ready
+
+;Arbeitsteil des Interrupts
 JSR displayClearBuffer
 	
 		
@@ -86,7 +148,8 @@ JSR displayClearBuffer
 	Mov.b #76h,0413h
 	Mov.b #65h,0414h
 	Mov.b #21h,0415h
-	Mov.b #0Ch,0416h
+	Mov.b #21h,0416h
+	Mov.b #0Ch,0417h
 	
 	Mov.w #0100h,R0
 	JSR displaySetPos
@@ -95,11 +158,20 @@ JSR displayClearBuffer
 	
 	JSR displayForceUpdate
 	
-	
+;Ende Arbeitsbereiche Interrupt
+;Entprellungstimeout hochstellen	
+	mov.b #ButtonTimeoutReloadValue, ButtonTimeout1		;Reload ButtonTimeout
+EndIntButton1:
 	reit
 
 
 Int1_int:
+;Entprellungscheck	
+	btst Button2Ready									;Button Ready?
+	jz	EndIntButton2									;Button not Ready!
+	bclr Button2Ready									;Button pressed, marked as Not Ready
+
+;Arbeitsteil des Interrupts
 	
 JSR displayClearBuffer
 	
@@ -132,17 +204,31 @@ JSR displayClearBuffer
 	JSR displayWriteString
 	
 	JSR displayForceUpdate
-
-
+	
+;Ende Arbeitsbereiche Interrupt
+;Entprellungstimeout hochstellen	
+	mov.b #ButtonTimeoutReloadValue, ButtonTimeout2		;Reload ButtonTimeout
+EndIntButton2:
 	reit
 
 
 Int2_int:
-	
+
+;Entprellungscheck	
+	btst Button2Ready									;Button Ready?
+	jz	EndIntButton2									;Button not Ready!
+	bclr Button2Ready									;Button pressed, marked as Not Ready
+
+;Arbeitsteil des Interrupts
+
 	JSR displayClearBuffer
 	
 	JSR displayForceUpdate
-	
+
+;Ende Arbeitsbereiche Interrupt
+;Entprellungstimeout hochstellen	
+	mov.b #ButtonTimeoutReloadValue, ButtonTimeout3		;Reload ButtonTimeout
+EndIntButton3:
 	reit
 
 
